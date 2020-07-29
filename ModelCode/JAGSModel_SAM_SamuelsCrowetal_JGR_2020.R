@@ -41,7 +41,7 @@ model{
   }
   
   # Two-way interaction effects:
-  for(j in 1:10){
+  for(j in 1:6){  # change: from 10 to 6
     
     beta2[j,1] ~ dnorm(0,0.00001)
   }
@@ -100,44 +100,42 @@ for(i in Nstart:Nend){
   
   # dYdVPD[i] <- VPD    + 2*VPD^2*VPDant        + VPDxTA*TAant        + VPDxPPT*PPTant       + VPDXSshall*Sshall_ant     + VPDXSdeep*Sdeep_ant (purpose)
   # dYdVPD[i] <- VPD    + 2*VPD^2*VPDant        + VPDxTA*TAant        + VPDxPPT*PPTant       + VPDXPAR*Sshall_ant     + VPDXSdeep*Sdeep_ant (actual)
-  dYdVPD[i] <- beta1[1] + 2*beta1a[1]*VPDant[i] + beta2[1,1]*TAant[i] + beta2[2,1]*PPTant[i] + beta2[3,1]*Sshall_ant[i] + beta2[4,1]*Sdeep_ant[i]
-  dYdT[i]   <- beta1[2] + 2*beta1a[2]*TAant[i] + beta2[1,1]*VPDant[i] + beta2[5,1]*PPTant[i] + beta2[6,1]*Sshall_ant[i] + beta2[7,1]*Sdeep_ant[i]
-  dYdP[i]   <- beta1[3] + beta2[2,1]*VPDant[i] + beta2[5,1]*TAant[i] + beta2[8,1]*Sshall_ant[i] + beta2[9,1]*Sdeep_ant[i]
-  dYdSs[i]  <- beta1[4] + beta2[3,1]*VPDant[i] + beta2[6,1]*TAant[i] + beta2[8,1]*PPTant[i] + beta2[10,1]*Sdeep_ant[i]
-  dYdSd[i]  <- beta1[5] + beta2[4,1]*VPDant[i] + beta2[7,1]*TAant[i] + beta2[9,1]*PPTant[i] + beta2[10,1]*Sshall_ant[i]
+  # change:
+  # correct indexes & remove Sdeep terms & rename Sshall to SWC
+  dYdVPD[i] <- beta1[1] + 2*beta1a[1]*VPDant[i] + beta2[1,1]*TAant[i] + beta2[2,1]*PPTant[i] + beta2[3,1]*SWC_ant[i]
+  dYdT[i]   <- beta1[2] + 2*beta1a[2]*TAant[i] + beta2[1,1]*VPDant[i] + beta2[4,1]*PPTant[i] + beta2[5,1]*SWC_ant[i]
+  dYdP[i]   <- beta1[3] + beta2[2,1]*VPDant[i] + beta2[4,1]*TAant[i] + beta2[6,1]*SWC_ant[i]
+  dYdSWC[i] <- beta1[5] + beta2[3,1]*VPDant[i] + beta2[5,1]*TAant[i] + beta2[6,1]*PPTant[i]
   
   dYdX[i,1] <- dYdVPD[i]
   dYdX[i,2] <- dYdT[i]
   dYdX[i,3] <- dYdP[i]
-  dYdX[i,4] <- dYdSs[i]
-  dYdX[i,5] <- dYdSd[i]
+  dYdX[i,4] <- dYdSWC[i]
   
   # creating antecedent covariates; This matrix of values will end up being used to calculate the parts involving main effects, interactions, and squared terms in the regression model:
+  # change: Ss --> SWC, remove Sd and Vrngant
   X[1,i] <- VPDant[i]       ## Also included as squared term
   X[2,i] <- TAant[i]        ## Also included as squared term
   X[3,i] <- PPTant[i]
-  X[4,i] <- Sshall_ant[i]
-  X[5,i] <- Sdeep_ant[i]
-  X[6,i] <- PAR[Yday[i]]    ## not included in interactions
-  X[7,i] <- Vrngant[i]      ## not included in interactions
+  X[4,i] <- SWC_ant[i]
+  X[5,i] <- PAR[Yday[i]]    ## not included in interactions
+  # X[7,i] <- Vrngant[i]      ## not included in interactions
   
   # Computed antecedent values. PAR is assumed to instantaneously affect ecosystem fluxes, so no antecedent term calculated
   
   VPDant[i]     <- sum(VPDtemp[i,])
   TAant[i]      <- sum(TAtemp[i,])
   PPTant[i]     <- sum(PPTtemp[i,])
-  Sshall_ant[i] <- sum(Sshalltemp[i,])
-  Sdeep_ant[i]  <- sum(Sdeeptemp[i,])
-  Vrngant[i]    <- sum(Vrngtemp[i,])
+  SWC_ant[i] <- sum(SWCtemp[i,])  # change: Sshall --> SWC
+  # Vrngant[i]    <- sum(Vrngtemp[i,]) # change: commented
   
   ## Intermediate weighted values of covariates with influence over flux over the past few days (or months for ppt)
   
   for(j in 1:Nlag){
     VPDtemp[i,j]    <- wV[j]*VPD_F[Yday[i]-j+1]
     TAtemp[i,j]     <- wT[j]*TA_F[Yday[i]-j+1]
-    Sshalltemp[i,j] <- wSs[j]*Sshall[Yday[i]-j+1]
-    Sdeeptemp[i,j]  <- wSd[j]*Sdeep[Yday[i]-j+1]
-    Vrngtemp[i,j]    <- wVrng[j]*V_rng[Yday[i]-j+1]
+    SWCtemp[i,j] <- wSWC[j]*SWC[Yday[i]-j+1]  # change: wSs --> wSWC, Sshall --> SWC
+    # Vrngtemp[i,j]    <- wVrng[j]*V_rng[Yday[i]-j+1]
   }
   
   for(j in 1:NlagP){
@@ -150,7 +148,7 @@ for(i in Nstart:Nend){
   }
   
   # Individual 2-way interaction terms:
-  for(j in 1:10){
+  for(j in 1:6){  # change: 10 --> 6
     
     XX.int[j,i] <- beta2[j,1]*X[ID1[j],i]*X[ID2[j],i]
     sum.XX.int[j,i] <- sum(XX.int[j,i])
