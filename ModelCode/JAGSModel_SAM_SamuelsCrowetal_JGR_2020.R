@@ -1,3 +1,14 @@
+#-------------------------------------------------------------------#
+# This is a modification of the original script by Samuels-Crow.
+# Three covariates below are removed from the original model:
+# 1) VPD (min)
+# 2) VPD (max)
+# 3) deep soil moisture
+#
+# Thus, daily VPD range (VPDrng) is also removed.
+# 
+# In addition, shallow soil moisture is renamed as SWC
+#-------------------------------------------------------------------#
 model{
   ##Placeholder for initial part of data set. 
   for(i in 1:(Nstart-1)){
@@ -7,7 +18,7 @@ model{
     
     Y.rep[i] <- 0
     
-    for(j in 1:7){
+    for(j in 1:5){  # change from 7 to 5 (numbe of covariates)
       X[j,i] <- 0
     }
   }
@@ -40,15 +51,15 @@ model{
   for(j in 1:Nlag){
   dV[j]    ~ dgamma(1,1)
   dT[j]    ~ dgamma(1,1)
-  dSs[j]   ~ dgamma(1,1)
-  dSd[j]   ~ dgamma(1,1)
-  dVrng[j] ~ dgamma(1,1)
+  dSWC[j]   ~ dgamma(1,1)  # renamed from dSs to dSWC
+  # dSd[j]   ~ dgamma(1,1)  # commented
+  # dVrng[j] ~ dgamma(1,1)  # commented
   
   wV[j]    <- dV[j]/sum(dV[])
   wT[j]    <- dT[j]/sum(dT[])
-  wSs[j]   <- dSs[j]/sum(dSs[])
-  wSd[j]   <- dSd[j]/sum(dSd[])
-  wVrng[j] <- dVrng[j]/sum(dVrng[])
+  wSWC[j]   <- dSWC[j]/sum(dSWC[])  # renamed from Ss to SWC
+  # wSd[j]   <- dSd[j]/sum(dSd[])  # commented
+  # wVrng[j] <- dVrng[j]/sum(dVrng[])  # commented
   }
 
 #Priors for importance weights for precipitation:
@@ -87,6 +98,8 @@ for(i in Nstart:Nend){
   
   ## Calculate net sensitivities (derivative)
   
+  # dYdVPD[i] <- VPD    + 2*VPD^2*VPDant        + VPDxTA*TAant        + VPDxPPT*PPTant       + VPDXSshall*Sshall_ant     + VPDXSdeep*Sdeep_ant (purpose)
+  # dYdVPD[i] <- VPD    + 2*VPD^2*VPDant        + VPDxTA*TAant        + VPDxPPT*PPTant       + VPDXPAR*Sshall_ant     + VPDXSdeep*Sdeep_ant (actual)
   dYdVPD[i] <- beta1[1] + 2*beta1a[1]*VPDant[i] + beta2[1,1]*TAant[i] + beta2[2,1]*PPTant[i] + beta2[3,1]*Sshall_ant[i] + beta2[4,1]*Sdeep_ant[i]
   dYdT[i]   <- beta1[2] + 2*beta1a[2]*TAant[i] + beta2[1,1]*VPDant[i] + beta2[5,1]*PPTant[i] + beta2[6,1]*Sshall_ant[i] + beta2[7,1]*Sdeep_ant[i]
   dYdP[i]   <- beta1[3] + beta2[2,1]*VPDant[i] + beta2[5,1]*TAant[i] + beta2[8,1]*Sshall_ant[i] + beta2[9,1]*Sdeep_ant[i]
