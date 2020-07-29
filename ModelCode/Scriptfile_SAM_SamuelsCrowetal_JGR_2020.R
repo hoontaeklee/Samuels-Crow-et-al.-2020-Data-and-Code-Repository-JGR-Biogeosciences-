@@ -99,20 +99,20 @@ X1a = cbind(X1[,1]^2,  # VPDavg ^ 2
             X1[,2]^2)  # Tair ^ 2
 X2  = cbind(X1[,1]*X1[,2],  # VPDavg x Tair
             X1[,1]*X1[,3],  # VPDavg x precipitation 
-            X1[,1]*X1[,4],  # VPDavg x PAR 
-            X1[,1]*X1[,5],  # VPDavg x SWC-shallow 
+            # X1[,1]*X1[,4],  # VPDavg x PAR (commented)
+            X1[,1]*X1[,5],  # VPDavg x SWC 
             X1[,2]*X1[,3],  # Tair x precipitation
-            X1[,2]*X1[,4],  # Tair x PAR
-            X1[,2]*X1[,5],  # Tair x SWC-shallow
-            X1[,3]*X1[,4],  # precipitation x PAR
-            X1[,3]*X1[,5],  # precipitation x SWC-shallow
-            X1[,4]*X1[,5])  # PAR x SWC-shallow
+            # X1[,2]*X1[,4],  # Tair x PAR (commented)
+            X1[,2]*X1[,5],  # Tair x SWC
+            # X1[,3]*X1[,4],  # precipitation x PAR (commented)
+            X1[,3]*X1[,5])  # precipitation x SWC
+            # X1[,4]*X1[,5])  # PAR x SWC-shallow (commented)
 
 # changes for the "fit" variable
-# removed: X1[,6], X1[,7]
+# removed: X1[,6], X1[,7], X2[,7]~X2[,10]
 # renamed(only a comment in the tail): SWC-Shallow --> SWC
 # PAR: 7th column of dataIN --> 6th column of dataIN
-fit <- lm(Y[Nstart:Nend] ~ X1[,1] + X1[,2] + X1[,3] + X1[,4] + X1[,5] + X1a[,1] + X1a[,2] + X2[,1] + X2[,2]  + X2[,3]  + X2[,4]  + X2[,5]  + X2[,6]  + X2[,7]  + X2[,8]  + X2[,9]  + X2[,10])
+fit <- lm(Y[Nstart:Nend] ~ X1[,1] + X1[,2] + X1[,3] + X1[,4] + X1[,5] + X1a[,1] + X1a[,2] + X2[,1] + X2[,2]  + X2[,3]  + X2[,4]  + X2[,5]  + X2[,6])
 
 beta0  = fit$coefficients[1]  # Intercept
 # changes for the "beta1" variable
@@ -126,16 +126,12 @@ beta1a = fit$coefficients[7:8]  # quadratic terms
 
 # interaction terms
 # changes for the "beta2" variable
-# [11:14] --> [9:12]
-# [15:17] --> [13:15]
-# [18:19] --> [16:17]
-# [20] --> [18]
-beta2 <- matrix(data = 0, nrow = 10, ncol = 1)
+# [11:14], [15:17], [18:19], [20]
+# --> [9:14]
 
-beta2[1:4,1]   = as.numeric(fit$coefficients[9:12])
-beta2[5:7,1]   = as.numeric(fit$coefficients[13:15])
-beta2[8:9,1]   = as.numeric(fit$coefficients[16:17])
-beta2[10,1]    = as.numeric(fit$coefficients[18])
+beta2 <- matrix(data = 0, nrow = 6, ncol = 1)  # change: nrow 10 to 6
+
+beta2[1:6,1]   = as.numeric(fit$coefficients[9:14])
 
 # changes for the "inits" variable
 # (for each list) 
