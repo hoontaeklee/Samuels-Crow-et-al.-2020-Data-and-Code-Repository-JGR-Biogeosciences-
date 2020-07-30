@@ -19,8 +19,8 @@
 setwd("C:/Users/Owner/Dropbox/Samuelscrow_2020_JGR") # set to your working directory
 library(rjags) # install rjags if necessary
 
-dataIN = read.csv("./DataFiles/Mpj_covariate.csv") #Choose the covariate file of interest. This should be a file that has all covariates for all time periods to ensure that 6-months of precipitation is supplied to the model – not just growing season precipitation
-YIN    = read.csv("./DataFiles/Mpj_YVar.csv") #Choose the response variable file of interest. This file includes growing-season response (Y) variables of interest along with indices that link the Y variables back to covariates of interest.
+dataIN = read.csv("./DataFiles/TCK_covariate.csv") #Choose the covariate file of interest. This should be a file that has all covariates for all time periods to ensure that 6-months of precipitation is supplied to the model – not just growing season precipitation
+YIN    = read.csv("./DataFiles/TCK_YVar.csv") #Choose the response variable file of interest. This file includes growing-season response (Y) variables of interest along with indices that link the Y variables back to covariates of interest.
 
 # The covariate data file (for dataIN) should include (1) the serial date, and (2) the following covariates (as columns in the data file):
 # (a) precipitation
@@ -53,11 +53,11 @@ Nj <- 10  # what is this?
 #                      ID2 = c(2:5, 3:5, 4:5, 5)),
 #           "./DataFiles/InteractionIND.csv",
 #           row.names = FALSE)
-jIND <- read.csv("./DataFiles/InteractionIND.csv") ## This file (see E.1, below) provides indices to calculate interactions between covariates
+jIND <- read.csv("./DataFiles/InteractionIND_mol.csv") ## This file (see E.1, below) provides indices to calculate interactions between covariates
 #-------------------------------------------------------------------#
 
 #-------------------------------------------------------------------#
-Nstart = 265  ## Choose the starting index. This is an index for a row in the Y data file. The value in the indexed row should be greater than 1 to accommodate calculation of antecedent values.
+Nstart = 1  ## Choose the starting index. This is an index for a row in the Y data file. The value in the indexed row should be greater than 1 to accommodate calculation of antecedent values.
 Nend   = nrow(YIN)  ## Choose the ending index. 
 Yday = YIN[, 3] ## Choose column in YIN that provides indices linking response variables with covariates
 #-------------------------------------------------------------------#
